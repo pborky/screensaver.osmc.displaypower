@@ -23,21 +23,19 @@ class Screensaver(xbmcgui.WindowXMLDialog):
 
     def _power_toggle(self):
         if self._is_powered:
-            cmd1 = ['echo', 'standby', '0'] 
+            arg2 = '0'
         else:
-            cmd1 = ['echo', 'on', '0'] 
+            arg2 = '1'
         try:
-            cmd2 = ['/usr/osmc/bin/cec-client', '-d', '1', '-s']
-            ps1 = subprocess.Popen((cmd1), stdout=subprocess.PIPE)
-            ps2 = subprocess.Popen((cmd2), stdin=ps1.stdout, stdout=subprocess.PIPE)
-            (out, err) = ps2.communicate()
-            xbmc.log(msg="%s: cec-client returned %s" % ( __addonid__, repr(out) ), level=xbmc.LOGDEBUG)
+            cmd = subprocess.Popen(['vcgencmd', 'display_power', arg2], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            (out, err) = cmd.communicate()
+            xbmc.log(msg="%s: vcgencmd returned %s" % ( __addonid__, repr(out) ), level=xbmc.LOGDEBUG)
             if not err:
                 self._is_powered = not self._is_powered
             else:
-                xbmc.log(msg="%s: cec-client returned %s" % ( __addonid__, repr(err) ), level=xbmc.LOGERROR)
+                xbmc.log(msg="%s: vcgencmd returned %s" % ( __addonid__, repr(err) ), level=xbmc.LOGERROR)
         except:
-            xbmc.log(msg="%s: Exception running cec-client" % ( __addonid__ ), level=xbmc.LOGERROR)
+            xbmc.log(msg="%s: Exception running vcgencmd" % ( __addonid__ ), level=xbmc.LOGERROR)
 
 
 class MyMonitor(xbmc.Monitor):
@@ -46,4 +44,3 @@ class MyMonitor(xbmc.Monitor):
 
     def onScreensaverDeactivated(self):
         self.action()
-
